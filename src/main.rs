@@ -1,7 +1,7 @@
 use std::time::Instant;
 use clap::Parser;
 
-mod assignment1;
+mod day01;
 
 #[derive(Parser)]
 struct Args {
@@ -22,7 +22,7 @@ fn main() {
     let args = Args::parse();
 
     match args.assignment.as_str() {
-        "1" => run_timed(assignment1::run),
+        "1" => run_timed(day01::run),
         o => println!("Unknown assignment {}", o),
     }
 }
