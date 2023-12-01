@@ -72,7 +72,7 @@ fn part2() -> i32 {
             if let Ok(l) = line {
                 let first = numerics.get(find_first(&l, &search_for)).unwrap();
                 let last = numerics.get(find_last(&l, &search_for)).unwrap();
-                let num = format!("{}{}", first,last).parse::<i32>().unwrap();
+                let num = format!("{}{}", first, last).parse::<i32>().unwrap();
                 sum += num;
             }
         }

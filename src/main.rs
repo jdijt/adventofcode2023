@@ -1,8 +1,8 @@
-use std::time::Instant;
 use clap::Parser;
+use std::time::Instant;
 
-mod day01;
 mod advent_util;
+mod day01;
 
 #[derive(Parser)]
 struct Args {
@@ -12,7 +12,7 @@ struct Args {
 
 fn run_timed(func: fn()) {
     println!("Starting\n");
-    let now= Instant::now();
+    let now = Instant::now();
     func();
     let elapsed = now.elapsed();
     println!("\nDone!");
