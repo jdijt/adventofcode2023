@@ -2,6 +2,7 @@ use std::time::Instant;
 use clap::Parser;
 
 mod day01;
+mod advent_util;
 
 #[derive(Parser)]
 struct Args {
