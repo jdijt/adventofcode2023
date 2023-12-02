@@ -61,15 +61,11 @@ fn parse_line(l: &String) -> Game {
 }
 
 fn part1(games: &Vec<Game>) -> i32 {
-    let mut possible_sum = 0;
-
-    for game in games {
-        if game.min_blue <= 14 && game.min_green <= 13 && game.min_red <= 12 {
-            possible_sum += game.id;
-        }
-    }
-
-    return possible_sum;
+    return games
+        .iter()
+        .filter(|g| g.min_blue <= 14 && g.min_green <= 13 && g.min_red <= 12)
+        .map(|g| g.id)
+        .sum();
 }
 
 fn part2(games: &Vec<Game>) -> i32 {
