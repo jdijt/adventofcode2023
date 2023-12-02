@@ -2,48 +2,43 @@ use std::collections::HashMap;
 
 use super::advent_util::read_lines;
 
-fn find_first<'a>(s: &String, search_for: &'a Vec<&str>) -> &'a &'a str {
-    return search_for
+fn find_first<'a>(s: &String, search_for: &Vec<&'a str>) -> &'a str {
+    let (_, res) = search_for
         .iter()
         .flat_map(|opt| s.find(opt).map(|idx| (idx, opt)))
         .min_by_key(|t| t.0)
-        .unwrap()
-        .1;
+        .unwrap();
+
+    return res;
 }
 
-fn find_last<'a>(s: &String, search_for: &'a Vec<&str>) -> &'a &'a str {
-    return search_for
+fn find_last<'a>(s: &String, search_for: &Vec<&'a str>) -> &'a str {
+    let (_, res) = search_for
         .iter()
         .flat_map(|opt| s.rfind(opt).map(|idx| (idx, opt)))
         .max_by_key(|t| t.0)
-        .unwrap()
-        .1;
+        .unwrap();
+
+    return res;
 }
 
-fn part1() -> i32 {
-    let mut sum = 0;
+fn part1(lines: &Vec<String>) -> i32 {
     let search_for = Vec::from(["1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 
-    if let Ok(lines) = read_lines("./inputs/day01") {
-        for line in lines {
-            if let Ok(l) = line {
-                let num = format!(
-                    "{}{}",
-                    find_first(&l, &search_for),
-                    find_last(&l, &search_for)
-                )
-                .parse::<i32>()
-                .unwrap();
-
-                sum += num
-            }
-        }
-    }
-
-    return sum;
+    return lines
+        .iter()
+        .map(|line| {
+            let val = format!(
+                "{}{}",
+                find_first(&line, &search_for),
+                find_last(&line, &search_for)
+            );
+            return val.parse::<i32>().unwrap();
+        })
+        .sum();
 }
 
-fn part2() -> i32 {
+fn part2(lines: &Vec<String>) -> i32 {
     let numerics = HashMap::from([
         ("one", 1),
         ("two", 2),
@@ -65,22 +60,22 @@ fn part2() -> i32 {
         ("9", 9),
     ]);
     let search_for: Vec<&str> = numerics.keys().copied().collect();
-    let mut sum = 0;
 
-    if let Ok(lines) = read_lines("./inputs/day1") {
-        for line in lines {
-            if let Ok(l) = line {
-                let first = numerics.get(find_first(&l, &search_for)).unwrap();
-                let last = numerics.get(find_last(&l, &search_for)).unwrap();
-                let num = format!("{}{}", first, last).parse::<i32>().unwrap();
-                sum += num;
-            }
-        }
-    }
-    return sum;
+    return lines
+        .iter()
+        .map(|line| {
+            let first = numerics.get(find_first(&line, &search_for)).unwrap();
+            let last = numerics.get(find_last(&line, &search_for)).unwrap();
+            return format!("{}{}", first, last).parse::<i32>().unwrap();
+        })
+        .sum();
 }
 
 pub fn run() {
-    println!("Part 1: {}", part1());
-    println!("Part 2: {}", part2());
+    let lines = read_lines("./inputs/day01")
+        .map(|ls| ls.map(|l| l.unwrap()).collect::<Vec<String>>())
+        .unwrap();
+
+    println!("Part 1: {}", part1(&lines));
+    println!("Part 2: {}", part2(&lines));
 }
