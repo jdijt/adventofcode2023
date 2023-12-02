@@ -24,7 +24,7 @@ fn part1() -> i32 {
     let mut sum = 0;
     let search_for = Vec::from(["1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 
-    if let Ok(lines) = read_lines("./inputs/day1") {
+    if let Ok(lines) = read_lines("./inputs/day01") {
         for line in lines {
             if let Ok(l) = line {
                 let num = format!(

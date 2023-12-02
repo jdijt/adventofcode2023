@@ -3,6 +3,7 @@ use std::time::Instant;
 
 mod advent_util;
 mod day01;
+mod day02;
 
 #[derive(Parser)]
 struct Args {
@@ -24,6 +25,7 @@ fn main() {
 
     match args.assignment.as_str() {
         "1" => run_timed(day01::run),
+        "2" => run_timed(day02::run),
         o => println!("Unknown assignment {}", o),
     }
 }
