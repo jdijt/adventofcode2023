@@ -10,26 +10,20 @@ struct Game {
 
 impl Game {
     fn new(id: i32) -> Self {
-        return Game {
-            id,
-            min_blue: 0,
-            min_red: 0,
-            min_green: 0,
-        };
+        Game { id, min_blue: 0, min_red: 0, min_green: 0 }
     }
 
     fn add_red(&mut self, count: i32) {
-        self.min_red = cmp::max(self.min_red, count);
+        self.min_red = cmp::max(self.min_red, count)
     }
     fn add_green(&mut self, count: i32) {
-        self.min_green = cmp::max(self.min_green, count);
+        self.min_green = cmp::max(self.min_green, count)
     }
     fn add_blue(&mut self, count: i32) {
-        self.min_blue = cmp::max(self.min_blue, count);
+        self.min_blue = cmp::max(self.min_blue, count)
     }
-
     fn power(&self) -> i32 {
-        return self.min_blue * self.min_green * self.min_red;
+        self.min_blue * self.min_green * self.min_red
     }
 }
 
@@ -60,15 +54,15 @@ fn parse_line(l: &String) -> Game {
 }
 
 fn part1(games: &Vec<Game>) -> i32 {
-    return games
+    games
         .iter()
         .filter(|g| g.min_blue <= 14 && g.min_green <= 13 && g.min_red <= 12)
         .map(|g| g.id)
-        .sum();
+        .sum()
 }
 
 fn part2(games: &Vec<Game>) -> i32 {
-    return games.iter().map(|g| g.power()).sum();
+    games.iter().map(|g| g.power()).sum()
 }
 
 fn main() {

@@ -24,7 +24,7 @@ fn find_last<'a>(s: &String, search_for: &Vec<&'a str>) -> &'a str {
 fn part1(lines: &Vec<String>) -> i32 {
     let search_for = Vec::from(["1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 
-    return lines
+    lines
         .iter()
         .map(|line| {
             let val = format!(
@@ -34,7 +34,7 @@ fn part1(lines: &Vec<String>) -> i32 {
             );
             return val.parse::<i32>().unwrap();
         })
-        .sum();
+        .sum()
 }
 
 fn part2(lines: &Vec<String>) -> i32 {
@@ -60,14 +60,14 @@ fn part2(lines: &Vec<String>) -> i32 {
     ]);
     let search_for: Vec<&str> = numerics.keys().copied().collect();
 
-    return lines
+    lines
         .iter()
         .map(|line| {
             let first = numerics.get(find_first(&line, &search_for)).unwrap();
             let last = numerics.get(find_last(&line, &search_for)).unwrap();
             return format!("{}{}", first, last).parse::<i32>().unwrap();
         })
-        .sum();
+        .sum()
 }
 
 fn main() {

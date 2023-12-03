@@ -16,11 +16,7 @@ impl Schematic {
         let y_limit: usize = raw.len() - 1;
         let x_limit: usize = raw.first().unwrap().len() - 1;
 
-        return Schematic {
-            raw,
-            y_limit,
-            x_limit,
-        };
+        Schematic { raw, y_limit, x_limit }
     }
 
     fn gen_to_check(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
@@ -50,20 +46,20 @@ impl Schematic {
             to_check.push((x, y - 1));
         }
 
-        return to_check;
+        to_check
     }
 
     fn get(&self, x: usize, y: usize) -> Option<&char> {
         return self.raw.get(y).and_then(|xs| xs.get(x));
     }
 
-    fn iter(&self) -> Box<dyn Iterator<Item = ((usize, usize), &char)> + '_> {
+    fn iter(&self) -> Box<dyn Iterator<Item=((usize, usize), &char)> + '_> {
         let iter =
             self.raw.iter().enumerate().flat_map(move |(y, xs)| {
                 xs.iter().enumerate().map(move |(x, value)| ((x, y), value))
             });
 
-        return Box::new(iter);
+        Box::new(iter)
     }
 }
 
