@@ -1,6 +1,5 @@
 use std::cmp;
-
-use crate::advent_util::read_lines;
+use aoc2023::{read_lines, run_timed};
 
 struct Game {
     id: i32,
@@ -72,11 +71,11 @@ fn part2(games: &Vec<Game>) -> i32 {
     return games.iter().map(|g| g.power()).sum();
 }
 
-pub fn run() {
+fn main() {
     let games = read_lines("./inputs/day02")
         .map(|ls| ls.map(|l| parse_line(&l.unwrap())).collect::<Vec<Game>>())
         .unwrap();
 
-    println!("Part 1: {}", part1(&games));
-    println!("Part 2: {}", part2(&games));
+    println!("Part 1: {}", run_timed(|| part1(&games)));
+    println!("Part 2: {}", run_timed(|| part2(&games)));
 }

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
-
-use super::advent_util::read_lines;
+use aoc2023::{read_lines, run_timed};
 
 fn find_first<'a>(s: &String, search_for: &Vec<&'a str>) -> &'a str {
     let (_, res) = search_for
@@ -71,11 +70,11 @@ fn part2(lines: &Vec<String>) -> i32 {
         .sum();
 }
 
-pub fn run() {
+fn main() {
     let lines = read_lines("./inputs/day01")
         .map(|ls| ls.map(|l| l.unwrap()).collect::<Vec<String>>())
         .unwrap();
 
-    println!("Part 1: {}", part1(&lines));
-    println!("Part 2: {}", part2(&lines));
+    println!("Part 1: {}", run_timed(|| part1(&lines)));
+    println!("Part 2: {}", run_timed(|| part2(&lines)));
 }
