@@ -1,5 +1,5 @@
-use std::cmp;
 use aoc2023::{read_lines, run_timed};
+use std::cmp;
 
 struct Game {
     id: i32,
@@ -10,7 +10,12 @@ struct Game {
 
 impl Game {
     fn new(id: i32) -> Self {
-        Game { id, min_blue: 0, min_red: 0, min_green: 0 }
+        Game {
+            id,
+            min_blue: 0,
+            min_red: 0,
+            min_green: 0,
+        }
     }
 
     fn add_red(&mut self, count: i32) {

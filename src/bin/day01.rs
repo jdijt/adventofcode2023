@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use aoc2023::{read_lines, run_timed};
+use std::collections::HashMap;
 
 fn find_first<'a>(s: &String, search_for: &Vec<&'a str>) -> &'a str {
     let (_, res) = search_for

@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use aoc2023::{read_lines, run_timed};
+use std::collections::HashMap;
 
 struct Schematic {
     raw: Vec<Vec<char>>,
@@ -16,7 +16,11 @@ impl Schematic {
         let y_limit: usize = raw.len() - 1;
         let x_limit: usize = raw.first().unwrap().len() - 1;
 
-        Schematic { raw, y_limit, x_limit }
+        Schematic {
+            raw,
+            y_limit,
+            x_limit,
+        }
     }
 
     fn gen_to_check(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
@@ -53,7 +57,7 @@ impl Schematic {
         return self.raw.get(y).and_then(|xs| xs.get(x));
     }
 
-    fn iter(&self) -> Box<dyn Iterator<Item=((usize, usize), &char)> + '_> {
+    fn iter(&self) -> Box<dyn Iterator<Item = ((usize, usize), &char)> + '_> {
         let iter =
             self.raw.iter().enumerate().flat_map(move |(y, xs)| {
                 xs.iter().enumerate().map(move |(x, value)| ((x, y), value))
