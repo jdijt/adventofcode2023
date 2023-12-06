@@ -138,9 +138,9 @@ fn part2(schematic: &Schematic) -> u64 {
         .values()
         .map(|vs| {
             if vs.len() == 2 {
-                return vs.iter().product();
+                vs.iter().product()
             } else {
-                return 0;
+                0
             }
         })
         .sum();
