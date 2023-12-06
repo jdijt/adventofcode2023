@@ -108,9 +108,7 @@ fn part2(seeds: &Vec<i64>, mappings: &Vec<Vec<Mapping>>) -> i64 {
         })
     }).collect();
 
-    let thread_result = threads.into_iter().map(|j| j.join().unwrap()).min().unwrap();
-
-    thread_result
+    threads.into_iter().map(|j| j.join().unwrap()).min().unwrap()
 }
 
 fn main() {
