@@ -82,7 +82,6 @@ fn part1(seeds: &Vec<i64>, mappings: &Vec<(String, Vec<Mapping>)>) -> i64 {
 
 fn part2(seeds: &Vec<i64>, mappings: &Vec<(String, Vec<Mapping>)>) -> i64 {
     let mut expanded_seeds: Vec<i64> = seeds
-        .clone()
         .chunks_exact(2)
         .flat_map(|chunk| {
             let from = *chunk.first().unwrap();
