@@ -1,7 +1,9 @@
 use aoc2023::{read_lines, run_timed};
 use std::ops::Range;
+use std::thread;
+use std::thread::JoinHandle;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Mapping {
     applies_to: Range<i64>,
     offset: i64,
@@ -40,7 +42,7 @@ impl Mapping {
     }
 }
 
-fn parse_file() -> (Vec<i64>, Vec<(String, Vec<Mapping>)>) {
+fn parse_file() -> (Vec<i64>, Vec<Vec<Mapping>>) {
     let mut lines = read_lines("./inputs/day05").unwrap().map(|l| l.unwrap());
 
     let seeds: Vec<i64> = lines
@@ -53,12 +55,12 @@ fn parse_file() -> (Vec<i64>, Vec<(String, Vec<Mapping>)>) {
         .map(|n| n.parse().unwrap())
         .collect();
 
-    let mappings: Vec<(String, Vec<Mapping>)> = lines.fold(Vec::new(), |mut acc, line| {
+    let mappings: Vec<Vec<Mapping>> = lines.fold(Vec::new(), |mut acc, line| {
         if line.starts_with(|c: char| c.is_digit(10)) {
-            let (_, ms) = acc.last_mut().unwrap();
+            let  ms = acc.last_mut().unwrap();
             ms.push(Mapping::from(line).unwrap());
         } else if line.starts_with(|c: char| c.is_alphabetic()) {
-            acc.push((String::from(line.strip_suffix(":").unwrap()), Vec::new()));
+            acc.push(Vec::new());
         }
         acc
     });
@@ -66,8 +68,8 @@ fn parse_file() -> (Vec<i64>, Vec<(String, Vec<Mapping>)>) {
     (seeds, mappings)
 }
 
-fn part1(seeds: &Vec<i64>, mappings: &Vec<(String, Vec<Mapping>)>) -> i64 {
-    let mapped_seeds = mappings.iter().fold(seeds.clone(), |acc, (_, ms)| {
+fn part1(seeds: &Vec<i64>, mappings: &Vec<Vec<Mapping>>) -> i64 {
+    let mapped_seeds = mappings.iter().fold(seeds.clone(), |acc, ms| {
         acc.into_iter()
             .map(|v| {
                 ms.iter()
@@ -80,25 +82,35 @@ fn part1(seeds: &Vec<i64>, mappings: &Vec<(String, Vec<Mapping>)>) -> i64 {
     *mapped_seeds.iter().min().unwrap()
 }
 
-fn part2(seeds: &Vec<i64>, mappings: &Vec<(String, Vec<Mapping>)>) -> i64 {
-    let mut expanded_seeds: Vec<i64> = seeds
+fn part2(seeds: &Vec<i64>, mappings: &Vec<Vec<Mapping>>) -> i64 {
+    let expanded_seeds: Vec<Range<i64>> = seeds
         .chunks_exact(2)
-        .flat_map(|chunk| {
+        .map(|chunk| {
             let from = *chunk.first().unwrap();
             let to = from + chunk.last().unwrap();
             from..to
         })
         .collect();
 
-    for (_, ms) in mappings {
-        for v in expanded_seeds.iter_mut() {
-            if let Some(m) = ms.iter().find(|m| m.applies_to.contains(&v)) {
-                m.mutate(v);
-            }
-        }
-    }
 
-    *expanded_seeds.iter().min().unwrap()
+    let threads: Vec<JoinHandle<i64>> = expanded_seeds.into_iter().map(|range| {
+        let mappings_clone: Vec<Vec<Mapping>> = mappings.clone();
+        thread::spawn(move || {
+            let mut seeds = range.collect::<Vec<i64>>();
+            for ms in mappings_clone {
+                for v in seeds.iter_mut() {
+                    if let Some(m) = ms.iter().find(|m| m.applies_to.contains(&v)) {
+                        m.mutate(v);
+                    }
+                }
+            }
+            *seeds.iter().min().unwrap()
+        })
+    }).collect();
+
+    let thread_result = threads.into_iter().map(|j| j.join().unwrap()).min().unwrap();
+
+    thread_result
 }
 
 fn main() {
