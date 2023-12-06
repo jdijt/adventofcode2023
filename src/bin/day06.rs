@@ -8,13 +8,12 @@ struct Race {
 
 impl Race {
     fn win_options_count(&self) -> u64 {
-        let mut count = 0u64;
-        for press_ms in 0..self.time{
-            if press_ms * (self.time - press_ms) > self.distance {
-                count += 1;
-            }
-        }
-        return count;
+        let is_win = |press_ms: &u64| press_ms * (self.time - press_ms) > self.distance;
+
+        let first_win = (0..self.time).find(is_win).unwrap();
+        let last_win = (0..self.time).rfind(is_win).unwrap() + 1; //we want the first not winning for diff to be correct.
+
+        last_win - first_win
     }
 }
 
