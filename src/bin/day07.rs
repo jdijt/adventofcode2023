@@ -27,7 +27,7 @@ impl Card {
 
 impl PartialOrd<Self> for Card {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.ordinal().partial_cmp(&other.ordinal())
+        Some(self.cmp(other))
     }
 }
 
@@ -37,7 +37,7 @@ impl Ord for Card {
     }
 }
 
-// Discriminants start at 0, so we can cast these to int for ord ;).
+// Discriminants start at 0, so the "best" hand should come last.
 #[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Clone)]
 enum HandType {
     HighCard,
@@ -64,16 +64,15 @@ impl Hand {
 
         let mut card_counts: HashMap<Card, i32> = HashMap::new();
         for c in cards.iter() {
-            if card_counts.contains_key(c) {
-                *card_counts.get_mut(c).unwrap() += 1;
-            } else {
-                card_counts.insert(c.clone(), 1);
+            if !card_counts.contains_key(c) {
+                card_counts.insert(c.clone(), 0);
             }
+            card_counts.get_mut(c).into_iter().for_each(|c| *c += 1)
         }
 
         let jokers = match card_counts.get(&Card('Z')) {
             Some(count) => *count,
-            _ => 0
+            _ => 0,
         };
 
         let mut counts: Vec<i32> = card_counts.into_values().collect();
@@ -97,11 +96,7 @@ impl Hand {
 
 impl PartialOrd for Hand {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if self.kind != other.kind {
-            self.kind.partial_cmp(&other.kind)
-        } else {
-            self.cards.partial_cmp(&other.cards)
-        }
+        Some(self.cmp(other))
     }
 }
 
@@ -121,15 +116,31 @@ fn main() {
         .map(|l| l.unwrap())
         .collect::<Vec<String>>();
 
-    println!("Part 1: {}", run_timed(|| {
-        let mut hs: Vec<Hand> = hands.iter().cloned().map(Hand::from).collect();
-        hs.sort();
+    println!(
+        "Part 1: {}",
+        run_timed(|| {
+            let mut hs: Vec<Hand> = hands.iter().cloned().map(Hand::from).collect();
+            hs.sort();
 
-        hs.into_iter().enumerate().map(|(idx, h)| h.bid * (idx + 1) as u64).sum::<u64>()
-    }));
-    println!("Part 2: {}", run_timed(|| {
-        let mut hs: Vec<Hand> = hands.iter().cloned().map(|s| Hand::from(s.replace('J', "Z"))).collect();
-        hs.sort();
-        hs.into_iter().enumerate().map(|(idx, h)| h.bid * (idx + 1) as u64).sum::<u64>()
-    }));
+            hs.into_iter()
+                .enumerate()
+                .map(|(idx, h)| h.bid * (idx + 1) as u64)
+                .sum::<u64>()
+        })
+    );
+    println!(
+        "Part 2: {}",
+        run_timed(|| {
+            let mut hs: Vec<Hand> = hands
+                .iter()
+                .cloned()
+                .map(|s| Hand::from(s.replace('J', "Z")))
+                .collect();
+            hs.sort();
+            hs.into_iter()
+                .enumerate()
+                .map(|(idx, h)| h.bid * (idx + 1) as u64)
+                .sum::<u64>()
+        })
+    );
 }
