@@ -57,7 +57,7 @@ fn parse_file() -> (Vec<i64>, Vec<Vec<Mapping>>) {
 
     let mappings: Vec<Vec<Mapping>> = lines.fold(Vec::new(), |mut acc, line| {
         if line.starts_with(|c: char| c.is_digit(10)) {
-            let  ms = acc.last_mut().unwrap();
+            let ms = acc.last_mut().unwrap();
             ms.push(Mapping::from(line).unwrap());
         } else if line.starts_with(|c: char| c.is_alphabetic()) {
             acc.push(Vec::new());
@@ -92,23 +92,29 @@ fn part2(seeds: &Vec<i64>, mappings: &Vec<Vec<Mapping>>) -> i64 {
         })
         .collect();
 
-
-    let threads: Vec<JoinHandle<i64>> = expanded_seeds.into_iter().map(|range| {
-        let mappings_clone: Vec<Vec<Mapping>> = mappings.clone();
-        thread::spawn(move || {
-            let mut seeds = range.collect::<Vec<i64>>();
-            for ms in mappings_clone {
-                for v in seeds.iter_mut() {
-                    if let Some(m) = ms.iter().find(|m| m.applies_to.contains(&v)) {
-                        m.mutate(v);
+    let threads: Vec<JoinHandle<i64>> = expanded_seeds
+        .into_iter()
+        .map(|range| {
+            let mappings_clone: Vec<Vec<Mapping>> = mappings.clone();
+            thread::spawn(move || {
+                let mut seeds = range.collect::<Vec<i64>>();
+                for ms in mappings_clone {
+                    for v in seeds.iter_mut() {
+                        if let Some(m) = ms.iter().find(|m| m.applies_to.contains(&v)) {
+                            m.mutate(v);
+                        }
                     }
                 }
-            }
-            *seeds.iter().min().unwrap()
+                *seeds.iter().min().unwrap()
+            })
         })
-    }).collect();
+        .collect();
 
-    threads.into_iter().map(|j| j.join().unwrap()).min().unwrap()
+    threads
+        .into_iter()
+        .map(|j| j.join().unwrap())
+        .min()
+        .unwrap()
 }
 
 fn main() {
