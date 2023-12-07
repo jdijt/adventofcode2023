@@ -37,16 +37,15 @@ impl Ord for Card {
     }
 }
 
-// Discriminants start at 0, so the "best" hand should come last.
 #[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Clone)]
 enum HandType {
-    HighCard,
-    OnePair,
-    TwoPair,
-    ThreeOfAKind,
-    FullHouse,
-    FourOfAKind,
-    FiveOfAKind,
+    HighCard = 1,
+    OnePair = 2,
+    TwoPair = 3,
+    ThreeOfAKind = 4,
+    FullHouse = 5,
+    FourOfAKind = 6,
+    FiveOfAKind = 7,
 }
 
 #[derive(Eq, PartialEq, Debug, Clone)]
