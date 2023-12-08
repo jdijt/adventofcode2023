@@ -66,11 +66,11 @@ fn main() {
         "Part 2 {}",
         run_timed(|| {
             let route_starts: Vec<&String> =
-                adjacency.keys().filter(|s| s.ends_with("A")).collect();
+                adjacency.keys().filter(|s| s.ends_with('A')).collect();
 
             let route_lengths: Vec<u128> = route_starts
                 .into_iter()
-                .map(|start| process_route(start, &route, &adjacency, |s| s.ends_with("Z")) as u128)
+                .map(|start| process_route(start, &route, &adjacency, |s| s.ends_with('Z')) as u128)
                 .collect();
 
             let max = *route_lengths.iter().max().unwrap();
