@@ -180,10 +180,8 @@ impl Map {
         return None;
     }
 
-    fn rows_iter(&self) -> Box<dyn Iterator<Item = (usize, &Vec<MapTile>)> + '_> {
-        let iter = self.0.iter().enumerate();
-
-        Box::new(iter)
+    fn rows_iter(&self) -> impl Iterator<Item = (usize, &Vec<MapTile>)> {
+        self.0.iter().enumerate()
     }
 }
 
@@ -227,6 +225,8 @@ fn part2(map: &Map) -> i32 {
                 match (tile, loop_enter) {
                     // Hack (start == vertical) that may only work for my input.
                     (Vertical | Start, None) => loop_intersections += 1,
+                    // Encountering one if these means we'll be going parallel to a pipe in the loop for a bit.
+                    // This may, or may not, lead to a crossing depending on the bend at the end of the pipeline.
                     (NorthToEast | SouthToEast, None) => loop_enter = Some(tile.clone()),
                     // This is the "enter from north go along horizontal, then exit further south" case
                     // I.e.: a crossing.

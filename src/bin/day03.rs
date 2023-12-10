@@ -57,13 +57,11 @@ impl Schematic {
         return self.raw.get(y).and_then(|xs| xs.get(x));
     }
 
-    fn iter(&self) -> Box<dyn Iterator<Item = ((usize, usize), &char)> + '_> {
-        let iter =
-            self.raw.iter().enumerate().flat_map(move |(y, xs)| {
-                xs.iter().enumerate().map(move |(x, value)| ((x, y), value))
-            });
-
-        Box::new(iter)
+    fn iter(&self) -> impl Iterator<Item = ((usize, usize), &char)> {
+        self.raw
+            .iter()
+            .enumerate()
+            .flat_map(move |(y, xs)| xs.iter().enumerate().map(move |(x, value)| ((x, y), value)))
     }
 }
 
