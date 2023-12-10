@@ -180,13 +180,8 @@ impl Map {
         return None;
     }
 
-    fn positions_iter(&self) -> Box<dyn Iterator<Item = Position> + '_> {
-        let iter = self.0.iter().enumerate().flat_map(|(y, xs)| {
-            (0..xs.len()).map(move |x| Position {
-                x: x as i32,
-                y: y as i32,
-            })
-        });
+    fn rows_iter(&self) -> Box<dyn Iterator<Item = (usize, &Vec<MapTile>)> + '_> {
+        let iter = self.0.iter().enumerate();
 
         Box::new(iter)
     }
@@ -220,24 +215,23 @@ fn part2(map: &Map) -> i32 {
     let full_loop_points: HashSet<Position> = HashSet::from_iter(compute_loop(map));
     let mut contained_count = 0;
 
-    for p in map.positions_iter() {
-        if full_loop_points.contains(&p) {
-            continue;
-        }
-        let mut loop_intersections_x = 0;
+    for (y, row) in map.rows_iter() {
+        let mut loop_intersections = 0;
         let mut loop_enter: Option<MapTile> = None;
-        for x in 0..p.x {
-            let pos = Position { x, y: p.y };
-            let tile = map.get(&pos).unwrap();
+        for (x, tile) in row.iter().enumerate() {
+            let pos = Position {
+                x: x as i32,
+                y: y as i32,
+            };
             if full_loop_points.contains(&pos) {
                 match (tile, loop_enter) {
-                    // Hack (start == vertical) that my only work for my input.
-                    (Vertical | Start, None) => loop_intersections_x += 1,
+                    // Hack (start == vertical) that may only work for my input.
+                    (Vertical | Start, None) => loop_intersections += 1,
                     (NorthToEast | SouthToEast, None) => loop_enter = Some(tile.clone()),
                     // This is the "enter from north go along horizontal, then exit further south" case
                     // I.e.: a crossing.
                     (NorthToWest, Some(SouthToEast)) | (SouthToWest, Some(NorthToEast)) => {
-                        loop_intersections_x += 1;
+                        loop_intersections += 1;
                         loop_enter = None;
                     }
                     // This is the "enter from north, go along horizontal, then go back north" case
@@ -248,11 +242,9 @@ fn part2(map: &Map) -> i32 {
                     (Horizontal, Some(NorthToEast | SouthToEast)) => {}
                     _ => panic!("Invalid state: {:?}", (tile, loop_enter)),
                 };
+            } else if loop_intersections > 0 && loop_intersections % 2 != 0 {
+                contained_count += 1;
             }
-        }
-
-        if loop_intersections_x > 0 && loop_intersections_x % 2 != 0 {
-            contained_count += 1;
         }
     }
 
