@@ -240,7 +240,9 @@ fn part2(map: &Map) -> i32 {
                         loop_enter = None
                     }
                     (Horizontal, Some(NorthToEast | SouthToEast)) => {}
-                    _ => panic!("Invalid state: {:?}", (tile, loop_enter)),
+                    _ => {
+                        panic!("Invalid state: {:?}", (tile, loop_enter))
+                    }
                 };
             } else if loop_intersections > 0 && loop_intersections % 2 != 0 {
                 contained_count += 1;

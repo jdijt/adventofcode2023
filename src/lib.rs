@@ -14,9 +14,9 @@ impl<T: Display> Display for TimedResult<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Result: {}, time: {} nanos",
+            "Result: {}, time: {} micros",
             self.res,
-            self.time.as_nanos()
+            self.time.as_micros()
         )
     }
 }
