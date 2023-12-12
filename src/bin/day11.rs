@@ -47,8 +47,8 @@ impl StarMap {
     }
 
     fn from_points(stars: Vec<Point>) -> StarMap {
-        let y_size = stars.iter().map(|p| p.y).max().unwrap();
-        let x_size = stars.iter().map(|p| p.x).max().unwrap();
+        let y_size = stars.iter().map(|p| p.y).max().unwrap() + 1;
+        let x_size = stars.iter().map(|p| p.x).max().unwrap() + 1;
 
         StarMap {
             stars,
@@ -84,13 +84,13 @@ impl StarMap {
     }
 }
 
-fn distance_sum(star_map: &StarMap, factor: u64) -> u64 {
-    let mut expanded_stars = star_map.expand(factor).stars;
+fn distance_sum(stars: StarMap) -> u64 {
+    let mut star_map = stars.stars;
     let mut distance_sum = 0;
 
-    while !expanded_stars.is_empty() {
-        let elem = expanded_stars.pop().unwrap();
-        for other in expanded_stars.iter() {
+    while !star_map.is_empty() {
+        let elem = star_map.pop().unwrap();
+        for other in star_map.iter() {
             distance_sum += elem.distance(other)
         }
     }
@@ -101,6 +101,18 @@ fn distance_sum(star_map: &StarMap, factor: u64) -> u64 {
 fn main() {
     let stars = StarMap::from_file();
 
-    println!("Part 1: {}", run_timed(|| distance_sum(&stars, 2)));
-    println!("Part 2: {}", run_timed(|| distance_sum(&stars, 1_000_000)));
+    println!(
+        "Part 1: {}",
+        run_timed(|| {
+            let expanded_stars = stars.expand(2);
+            distance_sum(expanded_stars)
+        })
+    );
+    println!(
+        "Part 2: {}",
+        run_timed(|| {
+            let expanded_stars = stars.expand(1_000_000);
+            distance_sum(expanded_stars)
+        })
+    );
 }
