@@ -120,10 +120,8 @@ struct Map(Vec<Vec<MapTile>>);
 impl Map {
     fn from_file() -> Map {
         let parsed = read_lines("./inputs/day10")
-            .unwrap()
             .map(|l| {
-                l.unwrap()
-                    .chars()
+                l.chars()
                     .map(|c| match c {
                         '|' => Vertical,
                         '-' => Horizontal,

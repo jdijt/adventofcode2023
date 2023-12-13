@@ -120,7 +120,7 @@ fn count_mismatched_elems<T: Eq>(l: &[T], r: &[T]) -> usize {
 
 fn read_input() -> Vec<Field> {
     let mut fields = vec![Field::empty()];
-    for line in read_lines("./inputs/day13").unwrap().map(|lr| lr.unwrap()) {
+    for line in read_lines("./inputs/day13") {
         if line.is_empty() {
             fields.push(Field::empty())
         } else {

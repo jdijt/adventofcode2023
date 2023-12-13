@@ -71,9 +71,7 @@ fn part2(lines: &Vec<String>) -> i32 {
 }
 
 fn main() {
-    let lines = read_lines("./inputs/day01")
-        .map(|ls| ls.map(|l| l.unwrap()).collect::<Vec<String>>())
-        .unwrap();
+    let lines = read_lines("./inputs/day01").collect::<Vec<String>>();
 
     println!("Part 1: {}", run_timed(|| part1(&lines)));
     println!("Part 2: {}", run_timed(|| part2(&lines)));

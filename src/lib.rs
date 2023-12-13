@@ -29,10 +29,12 @@ pub fn run_timed<T: Display, F: Fn() -> T>(func: F) -> TimedResult<T> {
     TimedResult { res, time }
 }
 
-pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+pub fn read_lines<P>(filename: P) -> impl Iterator<Item = String>
 where
     P: AsRef<Path>,
 {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+    File::open(filename)
+        .map(|f| io::BufReader::new(f).lines())
+        .expect("Error opening input file")
+        .map(|l| l.expect("Error reading line from input file"))
 }

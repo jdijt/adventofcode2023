@@ -32,7 +32,7 @@ impl Game {
     }
 }
 
-fn parse_line(l: &String) -> Game {
+fn parse_line(l: &str) -> Game {
     let (game_header, revelations) = l.split_once(":").unwrap();
     let game_id = game_header
         .split_once(" ")
@@ -72,8 +72,8 @@ fn part2(games: &Vec<Game>) -> i32 {
 
 fn main() {
     let games = read_lines("./inputs/day02")
-        .map(|ls| ls.map(|l| parse_line(&l.unwrap())).collect::<Vec<Game>>())
-        .unwrap();
+        .map(|l| parse_line(&l))
+        .collect();
 
     println!("Part 1: {}", run_timed(|| part1(&games)));
     println!("Part 2: {}", run_timed(|| part2(&games)));

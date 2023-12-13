@@ -2,7 +2,7 @@ use aoc2023::{read_lines, run_timed};
 use std::collections::HashMap;
 
 fn read_input() -> (String, HashMap<String, (String, String)>) {
-    let mut lines = read_lines("./inputs/day08").unwrap().map(|l| l.unwrap());
+    let mut lines = read_lines("./inputs/day08");
 
     let route = lines.next().unwrap();
     lines.next();

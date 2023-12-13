@@ -31,14 +31,10 @@ struct StarMap {
 impl StarMap {
     fn from_file() -> StarMap {
         let mut stars: Vec<Point> = Vec::new();
-        if let Ok(lines) = read_lines("./inputs/day11") {
-            for (y, lr) in lines.enumerate() {
-                if let Ok(l) = lr {
-                    for (x, c) in l.chars().enumerate() {
-                        if c == '#' {
-                            stars.push(Point::from(x, y));
-                        }
-                    }
+        for (y, l) in read_lines("./inputs/day11").enumerate() {
+            for (x, c) in l.chars().enumerate() {
+                if c == '#' {
+                    stars.push(Point::from(x, y));
                 }
             }
         }

@@ -43,7 +43,7 @@ impl Mapping {
 }
 
 fn parse_file() -> (Vec<i64>, Vec<Vec<Mapping>>) {
-    let mut lines = read_lines("./inputs/day05").unwrap().map(|l| l.unwrap());
+    let mut lines = read_lines("./inputs/day05");
 
     let seeds: Vec<i64> = lines
         .next()

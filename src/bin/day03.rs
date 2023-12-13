@@ -147,8 +147,7 @@ fn part2(schematic: &Schematic) -> u64 {
 fn main() {
     let schematic = Schematic::from(
         read_lines("./inputs/day03")
-            .unwrap()
-            .map(|lr| lr.unwrap().chars().collect::<Vec<char>>())
+            .map(|l| l.chars().collect::<Vec<char>>())
             .collect(),
     );
 

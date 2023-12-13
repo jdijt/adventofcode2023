@@ -110,10 +110,7 @@ impl Ord for Hand {
 }
 
 fn main() {
-    let hands = read_lines("./inputs/day07")
-        .unwrap()
-        .map(|l| l.unwrap())
-        .collect::<Vec<String>>();
+    let hands: Vec<String> = read_lines("./inputs/day07").collect();
 
     println!(
         "Part 1: {}",

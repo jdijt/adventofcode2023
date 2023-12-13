@@ -82,12 +82,9 @@ fn part2(cards: &Vec<Card>) -> u32 {
 }
 
 fn main() {
-    let cards = read_lines("./inputs/day04")
-        .map(|ls| {
-            ls.map(|l| Card::from(l.unwrap().trim()))
-                .collect::<Vec<Card>>()
-        })
-        .unwrap();
+    let cards: Vec<Card> = read_lines("./inputs/day04")
+        .map(|l| Card::from(l.trim()))
+        .collect();
 
     println!(
         "Part 1: {}",

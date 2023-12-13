@@ -27,8 +27,6 @@ fn extrapolate(input: &Vec<i64>) -> i64 {
 
 fn main() {
     let sequences: Vec<Vec<i64>> = read_lines("./inputs/day09")
-        .unwrap()
-        .map(|l| l.unwrap())
         .map(|s| {
             s.split_whitespace()
                 .map(|n| n.parse::<i64>().unwrap())

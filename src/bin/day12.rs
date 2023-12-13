@@ -146,11 +146,7 @@ fn count_options(line: &[SpringState], groups: &[usize], memory: &mut Memory) ->
 }
 
 fn main() {
-    let input: Vec<SpringData> = read_lines("./inputs/day12")
-        .unwrap()
-        .map(|l| l.unwrap())
-        .map(SpringData::from)
-        .collect();
+    let input: Vec<SpringData> = read_lines("./inputs/day12").map(SpringData::from).collect();
 
     println!(
         "Part 1: {}",
