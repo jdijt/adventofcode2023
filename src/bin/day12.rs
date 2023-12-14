@@ -107,31 +107,31 @@ fn count_options(line: &[SpringState], groups: &[usize], memory: &mut Memory) ->
     if let Some(res) = memory.get(&key) {
         *res
     } else {
-        let res = match line.split_first() {
+        let res = match line {
             // Cannot place a Damaged group here -> next.
-            Some((Operational, l_rem)) => count_options(l_rem, groups, memory),
+            [Operational, ls @ ..] => count_options(ls, groups, memory),
             // Should place the next Damaged group here.
-            Some((Damaged, _)) => {
-                if let Some((group, g_rem)) = groups.split_first() {
-                    put_group(*group, line, g_rem, memory)
+            [Damaged, ..] => {
+                if let [group, gs @ ..] = groups {
+                    put_group(*group, line, gs, memory)
                 } else {
                     //We must be able to place a group here but cannot -> invalid.
                     Res::Invalid
                 }
             }
             //Here we can choose to place or not
-            Some((Unknown, l_rem)) => {
-                if let Some((group, g_rem)) = groups.split_first() {
-                    let not_put = count_options(l_rem, groups, memory);
-                    let put = put_group(*group, line, g_rem, memory);
+            [Unknown, ls @ ..] => {
+                if let [group, gs @ ..] = groups {
+                    let not_put = count_options(ls, groups, memory);
+                    let put = put_group(*group, line, gs, memory);
 
                     put.combine(&not_put)
                 } else {
                     //No groups available, this "unknown" must be "operational".
-                    count_options(l_rem, groups, memory)
+                    count_options(ls, groups, memory)
                 }
             }
-            None => {
+            [] => {
                 //We're through the line but a group is left -> invalid
                 if groups.len() > 0 {
                     Res::Invalid

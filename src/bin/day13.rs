@@ -48,13 +48,19 @@ impl Field {
     fn add_row(&mut self, row: &str) {
         let elems: Vec<FieldElem> = row.chars().map(FieldElem::from).collect();
 
-        self.as_rows.push(elems.clone());
-
-        //expand cols if needed should in practice only happen on the first row added.
-        while self.as_cols.len() < elems.len() {
-            self.as_cols.push(Vec::new());
+        //Assume input is _square_
+        //Fill cols based on first rows length.
+        if self.as_rows.len() == 0 {
+            while self.as_cols.len() < elems.len() {
+                self.as_cols.push(Vec::new());
+            }
         }
 
+        if row.len() != self.as_cols.len() {
+            panic!("This map aint square!");
+        }
+
+        self.as_rows.push(elems.clone());
         for (col, elem) in self.as_cols.iter_mut().zip(elems.into_iter()) {
             col.push(elem)
         }
@@ -120,12 +126,11 @@ fn count_mismatched_elems<T: Eq>(l: &[T], r: &[T]) -> usize {
 
 fn read_input() -> Vec<Field> {
     let mut fields = vec![Field::empty()];
-    for line in read_lines("./inputs/day13") {
+    for line in read_lines("./inputs/day13").skip_while(String::is_empty) {
         if line.is_empty() {
             fields.push(Field::empty())
-        } else {
-            let head = fields.last_mut().unwrap();
-            head.add_row(&line)
+        } else if let Some(fld) = fields.last_mut() {
+            fld.add_row(&line)
         }
     }
     fields
