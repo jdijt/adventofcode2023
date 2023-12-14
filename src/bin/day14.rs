@@ -1,8 +1,9 @@
 use crate::Elem::{Cube, Empty, Round};
 use aoc2023::{read_lines, run_timed};
 use std::mem::swap;
+use std::process::id;
 
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
 enum Elem {
     Round,
     Cube,
@@ -110,27 +111,34 @@ fn part1(field: &Field) -> u64 {
 }
 
 fn part2(field: &Field) -> u64 {
-    let mut past_field = field.clone();
+    let mut work_field = field.clone();
     let mut counter = 0;
-    let mut unstable = true;
+    let mut past_fields: Vec<Field> = vec![work_field.clone()];
+    let mut first_match_idx: usize = 0;
 
-    while counter < 1_000_000_000 && unstable {
-        let mut new_field = past_field.clone();
-        shift_north(&mut new_field);
-        shift_west(&mut new_field);
-        shift_south(&mut new_field);
-        shift_east(&mut new_field);
+    while counter < 1_000_000_000 {
+        shift_north(&mut work_field);
+        shift_west(&mut work_field);
+        shift_south(&mut work_field);
+        shift_east(&mut work_field);
 
-        unstable = past_field != new_field;
-        past_field = new_field;
+        if let Some(idx) = past_fields.iter().position(|f| f == &work_field) {
+            first_match_idx = idx;
+            break;
+        }
+        past_fields.push(work_field.clone());
+
         counter += 1;
     }
 
-    field_score(&past_field)
+    let loop_len = past_fields.len() - first_match_idx;
+    let rem = (1_000_000_000 - first_match_idx) % loop_len;
+
+    field_score(&past_fields.get(first_match_idx + rem).unwrap())
 }
 
 fn main() {
-    let field: Field = read_lines("./inputs/day14_tst")
+    let field: Field = read_lines("./inputs/day14")
         .map(|l| l.chars().map(Elem::from).collect())
         .collect();
 
