@@ -1,7 +1,6 @@
 use crate::Elem::{Cube, Empty, Round};
 use aoc2023::{read_lines, run_timed};
 use std::mem::swap;
-use std::process::id;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
 enum Elem {
