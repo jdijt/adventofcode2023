@@ -1,9 +1,8 @@
 use aoc2023::{read_lines, run_timed};
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap, HashSet};
-use std::io::SeekFrom::Start;
+use std::collections::{BinaryHeap, HashMap};
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 enum Dir {
     Left,
     Right,
@@ -21,7 +20,7 @@ impl Point {
     fn from(x: usize, y: usize) -> Point {
         Point { x, y }
     }
-    fn get_valid_neighbours(&self, map: &Costs, incoming: Dir) -> Vec<(Dir, Point)> {
+    fn get_valid_neighbours(&self, incoming: Dir, map: &Costs) -> Vec<(Dir, Point)> {
         let mut new_points = Vec::new();
         if self.x > 0 && incoming != Dir::Right {
             new_points.push((Dir::Left, Point::from(self.x - 1, self.y)))
@@ -37,14 +36,18 @@ impl Point {
         }
         new_points
     }
+    fn dist(&self, other: &Self) -> u32 {
+        (self.x.abs_diff(other.x) + self.y.abs_diff(other.y)) as u32
+    }
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Copy, Clone)]
 struct State {
     cost: u32,
     point: Point,
-    last_direction: Dir,
-    dir_steps: u32,
+    dir: Dir,
+    steps: u32,
+    dist: u32,
 }
 
 impl PartialOrd<Self> for State {
@@ -57,7 +60,24 @@ impl Ord for State {
     // Need to flip ordering for
     // if cost + estimation == equal, take the one with the lower estimate.
     fn cmp(&self, other: &Self) -> Ordering {
-        other.cost.cmp(&(self.cost))
+        (other.dist + other.cost).cmp(&(self.cost + self.dist))
+    }
+}
+
+#[derive(Eq, PartialEq, Hash, Debug, Copy, Clone)]
+struct StateKey {
+    point: Point,
+    dir: Dir,
+    steps: u32,
+}
+
+impl From<State> for StateKey {
+    fn from(value: State) -> Self {
+        StateKey {
+            point: value.point,
+            dir: value.dir,
+            steps: value.steps,
+        }
     }
 }
 
@@ -94,73 +114,90 @@ impl Costs {
     }
 }
 
-fn find_cheapest_route(costs: &Costs) -> u32 {
-    let target = Point::from(0, 0);
-    let start = Point::from(costs.x_len - 1, costs.y_len - 1);
+fn find_cheapest_route(
+    costs: &Costs,
+    start: Point,
+    target: Point,
+    min_steps: u32,
+    max_steps: u32,
+) -> u32 {
     let mut to_visit: BinaryHeap<State> = BinaryHeap::new();
-    let mut known_costs: Vec<Vec<u32>> = (0..costs.y_len)
-        .map(|y| {
-            (0..costs.x_len)
-                .map(|x| {
-                    if x == start.x && y == start.y {
-                        *costs.cost_at(&Point::from(x, y))
-                    } else {
-                        u32::MAX
-                    }
-                })
-                .collect()
-        })
-        .collect();
+    let mut known_costs: HashMap<StateKey, u32> = HashMap::new();
+    let start_down = State {
+        cost: 0,
+        steps: 0,
+        point: start,
+        dir: Dir::Down,
+        dist: start.dist(&target),
+    };
+    let start_right = State {
+        cost: 0,
+        steps: 0,
+        point: start,
+        dir: Dir::Right,
+        dist: start.dist(&target),
+    };
+    to_visit.push(start_down);
+    to_visit.push(start_right);
+    known_costs.insert(start_right.into(), 0);
+    known_costs.insert(start_down.into(), 0);
 
-    for (dir, p) in start.get_valid_neighbours(costs, Dir::Right) {
-        let cost = costs.cost_at(&p);
-        to_visit.push(State {
-            cost: *cost,
-            point: p,
-            last_direction: dir,
-            dir_steps: 1,
-        });
-        if let Some(mut c) = known_costs.get_mut(p.y).and_then(|xs| xs.get_mut(p.x)) {
-            *c = *cost
+    while let Some(st) = to_visit.pop() {
+        if st.point == target {
+            return st.cost;
         }
-    }
+        //Already encountered a cheaper use of this point
+        if known_costs.get(&st.into()).is_some_and(|&c| c < st.cost) {
+            continue;
+        }
 
-    while let Some(state) = to_visit.pop() {
-        let next_options = state
-            .point
-            .get_valid_neighbours(costs, state.last_direction);
-
-        for (dir, neighb) in next_options {
-            let new_state = State {
-                cost: state.cost + costs.cost_at(&neighb),
-                point: neighb,
-                last_direction: dir,
-                dir_steps: if dir == state.last_direction {
-                    state.dir_steps + 1
-                } else {
-                    1
-                },
+        for (dir, next) in st.point.get_valid_neighbours(st.dir, costs) {
+            let new_st = State {
+                cost: st.cost + costs.cost_at(&next),
+                point: next,
+                dir,
+                steps: if dir == st.dir { st.steps + 1 } else { 1 },
+                dist: next.dist(&target),
             };
-            if new_state.dir_steps > 3 {
+            //Skip condition: too many steps, or we know a cheaper alt.
+            //Or (p2) we make a turn before min steps.
+            if new_st.steps > max_steps
+                || known_costs
+                    .get(&new_st.into())
+                    .is_some_and(|&c| c <= new_st.cost)
+                || (new_st.dir != st.dir && st.steps < min_steps)
+            {
                 continue;
             }
-            if let Some(mut known_cost) = known_costs
-                .get_mut(neighb.y)
-                .and_then(|xs| xs.get_mut(neighb.x))
-            {
-                if new_state.cost <= *known_cost {
-                    *known_cost = new_state.cost;
-                    to_visit.push(new_state);
-                }
-            }
+            to_visit.push(new_st);
+            known_costs.insert(new_st.into(), new_st.cost);
         }
     }
 
-    *known_costs.get(target.y).unwrap().get(target.x).unwrap()
+    u32::MAX
 }
 
 fn main() {
     let costs = Costs::read_from_file("./inputs/day17");
 
-    println!("Part 1: {}", run_timed(|| find_cheapest_route(&costs)))
+    println!(
+        "Part 1: {}",
+        run_timed(|| find_cheapest_route(
+            &costs,
+            Point::from(0, 0),
+            Point::from(costs.x_len - 1, costs.y_len - 1),
+            1,
+            3
+        ))
+    );
+    println!(
+        "Part 2: {}",
+        run_timed(|| find_cheapest_route(
+            &costs,
+            Point::from(0, 0),
+            Point::from(costs.x_len - 1, costs.y_len - 1),
+            4,
+            10
+        ))
+    );
 }
