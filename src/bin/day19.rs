@@ -1,5 +1,5 @@
 use aoc2023::{read_lines, run_timed};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 enum Result {
@@ -97,6 +97,7 @@ impl Workflow {
     }
 }
 
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
 struct Range {
     start: u32,
     end: u32,
@@ -106,12 +107,28 @@ impl Range {
     fn new() -> Range {
         Range {
             start: 1,
-            end: 4000,
+            end: 4001,
         }
     }
 
-    fn length(&self) -> u32 {
+    fn len(&self) -> u32 {
         self.end - self.start
+    }
+
+    fn split(&self, at: &u32) -> (Range, Range) {
+        if *at < self.start || *at > self.end {
+            panic!("Split out of range")
+        }
+        (
+            Range {
+                start: self.start,
+                end: *at,
+            },
+            Range {
+                start: *at,
+                end: self.end,
+            },
+        )
     }
 }
 
@@ -132,15 +149,10 @@ fn read_input(file_name: &str) -> (HashMap<String, Workflow>, Vec<Part>) {
         .map(|l| {
             l[1..l.len() - 1]
                 .split(',')
-                .map(|part_val| {
-                    if let Some(idx) = part_val.find('=') {
-                        (
-                            String::from(&part_val[..idx]),
-                            part_val[idx + 1..].parse().unwrap(),
-                        )
-                    } else {
-                        panic!("Invalid part definion")
-                    }
+                .filter_map(|part_val| {
+                    part_val
+                        .split_once('=')
+                        .map(|(var, value)| (String::from(var), value.parse().unwrap()))
                 })
                 .collect()
         })
@@ -165,8 +177,79 @@ fn part1(workflows: &HashMap<String, Workflow>, parts: &Vec<Part>) -> u32 {
     sum
 }
 
+fn part2(workflows: &HashMap<String, Workflow>) -> u64 {
+    let mut todo = VecDeque::new();
+    todo.push_back((
+        workflows.get(&String::from("in")).unwrap(),
+        HashMap::from([
+            (String::from("x"), Range::new()),
+            (String::from("m"), Range::new()),
+            (String::from("a"), Range::new()),
+            (String::from("s"), Range::new()),
+        ]),
+    ));
+
+    let mut result_sum = 0u64;
+    while let Some((wf, mut ranges)) = todo.pop_front() {
+        for Rule { condition, result } in wf.rules.iter() {
+            // Reject needs separate treatment as it requires just a _substraction_ from the available ranges.
+            if *result == Result::Reject {
+                //Shrink remaining ranges.
+                match condition {
+                    Some(Expression::Gt(var, val)) => {
+                        if let Some(old) = ranges.get_mut(var) {
+                            let (lt, _) = old.split(&(val + 1));
+                            *old = lt;
+                        }
+                    }
+                    Some(Expression::Lt(var, val)) => {
+                        if let Some(old) = ranges.get_mut(var) {
+                            let (_, gt) = old.split(&val);
+                            *old = gt;
+                        }
+                    }
+                    _ => {}
+                }
+                continue;
+            }
+            // for OK / Goto we need to first apply the rules in the same way.
+            let mut new_ranges = ranges.clone();
+            match condition {
+                Some(Expression::Gt(var, val)) => {
+                    if let (Some(current), Some(current_new)) =
+                        (ranges.get_mut(var), new_ranges.get_mut(var))
+                    {
+                        let (rem, new) = current.split(&(val + 1));
+                        *current = rem;
+                        *current_new = new;
+                    }
+                }
+                Some(Expression::Lt(var, val)) => {
+                    if let (Some(current), Some(current_new)) =
+                        (ranges.get_mut(var), new_ranges.get_mut(var))
+                    {
+                        let (new, rem) = current.split(&(val));
+                        *current = rem;
+                        *current_new = new;
+                    }
+                }
+                _ => {}
+            }
+            // And then decide: add it to work queue, or add it to result vector.
+            if *result == Result::Ok {
+                result_sum += new_ranges.values().map(|r| r.len() as u64).product::<u64>()
+            } else if let Result::Goto(wf_name) = result {
+                todo.push_back((workflows.get(&wf_name as &str).unwrap(), new_ranges))
+            }
+        }
+    }
+
+    result_sum
+}
+
 fn main() {
     let (workflows, parts) = read_input("./inputs/day19");
 
-    println!("Part 1:  {}", run_timed(|| part1(&workflows, &parts)))
+    println!("Part 1:  {}", run_timed(|| part1(&workflows, &parts)));
+    println!("Part 2:  {}", run_timed(|| part2(&workflows)));
 }
