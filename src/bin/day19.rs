@@ -41,6 +41,13 @@ impl Expression {
             Expression::Lt(r, v) => context.get(r).unwrap() < v,
         }
     }
+
+    fn var(&self) -> &str {
+        match self {
+            Expression::Gt(v, _) => v,
+            Expression::Lt(v, _) => v,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -61,10 +68,9 @@ impl Rule {
     }
 
     fn applies(&self, part: &Part) -> bool {
-        if let Some(ref cond) = self.condition {
-            cond.check(part)
-        } else {
-            true
+        match &self.condition {
+            Some(cond) => cond.check(part),
+            None => true,
         }
     }
 }
@@ -115,20 +121,30 @@ impl Range {
         self.end - self.start
     }
 
-    fn split(&self, at: &u32) -> (Range, Range) {
-        if *at < self.start || *at > self.end {
-            panic!("Split out of range")
+    // Returns: "range-exp-acceptsp, range-exp-rejects"
+    fn split(&self, by_expr: &Expression) -> (Range, Range) {
+        match by_expr {
+            Expression::Gt(_, v) => (
+                Range {
+                    start: *v + 1,
+                    end: self.end,
+                },
+                Range {
+                    start: self.start,
+                    end: *v + 1,
+                },
+            ),
+            Expression::Lt(_, v) => (
+                Range {
+                    start: self.start,
+                    end: *v,
+                },
+                Range {
+                    start: *v,
+                    end: self.end,
+                },
+            ),
         }
-        (
-            Range {
-                start: self.start,
-                end: *at,
-            },
-            Range {
-                start: *at,
-                end: self.end,
-            },
-        )
     }
 }
 
@@ -195,51 +211,29 @@ fn part2(workflows: &HashMap<String, Workflow>) -> u64 {
             // Reject needs separate treatment as it requires just a _substraction_ from the available ranges.
             if *result == Result::Reject {
                 //Shrink remaining ranges.
-                match condition {
-                    Some(Expression::Gt(var, val)) => {
-                        if let Some(old) = ranges.get_mut(var) {
-                            let (lt, _) = old.split(&(val + 1));
-                            *old = lt;
-                        }
-                    }
-                    Some(Expression::Lt(var, val)) => {
-                        if let Some(old) = ranges.get_mut(var) {
-                            let (_, gt) = old.split(&val);
-                            *old = gt;
-                        }
-                    }
-                    _ => {}
+                if let Some(c) = condition {
+                    let old = ranges.get_mut(c.var()).unwrap();
+                    let (_, remains) = old.split(c);
+                    *old = remains
                 }
-                continue;
-            }
-            // for OK / Goto we need to first apply the rules in the same way.
-            let mut new_ranges = ranges.clone();
-            match condition {
-                Some(Expression::Gt(var, val)) => {
-                    if let (Some(current), Some(current_new)) =
-                        (ranges.get_mut(var), new_ranges.get_mut(var))
-                    {
-                        let (rem, new) = current.split(&(val + 1));
-                        *current = rem;
-                        *current_new = new;
-                    }
+            } else {
+                // for OK / Goto we need to first apply the rules & split
+                // Same for both cases.
+                let mut new_ranges = ranges.clone();
+                if let Some(c) = condition {
+                    let old = ranges.get_mut(c.var()).unwrap();
+                    let new = new_ranges.get_mut(c.var()).unwrap();
+                    let (applies, remains) = old.split(c);
+                    *old = remains;
+                    *new = applies;
                 }
-                Some(Expression::Lt(var, val)) => {
-                    if let (Some(current), Some(current_new)) =
-                        (ranges.get_mut(var), new_ranges.get_mut(var))
-                    {
-                        let (new, rem) = current.split(&(val));
-                        *current = rem;
-                        *current_new = new;
-                    }
+
+                // And then decide: add it to work queue, or add it to result vector.
+                if *result == Result::Ok {
+                    result_sum += new_ranges.values().map(|r| r.len() as u64).product::<u64>()
+                } else if let Result::Goto(wf_name) = result {
+                    todo.push_back((workflows.get(wf_name).unwrap(), new_ranges))
                 }
-                _ => {}
-            }
-            // And then decide: add it to work queue, or add it to result vector.
-            if *result == Result::Ok {
-                result_sum += new_ranges.values().map(|r| r.len() as u64).product::<u64>()
-            } else if let Result::Goto(wf_name) = result {
-                todo.push_back((workflows.get(&wf_name as &str).unwrap(), new_ranges))
             }
         }
     }
